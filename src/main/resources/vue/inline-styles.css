@@ -1,0 +1,49 @@
+.v-overlay.v-dialog .vss-movable {
+    cursor: grab;
+}
+/* .v-overlay.v-dialog .vss-movable:hover {
+background-color: #eee;
+} */
+.v-overlay.v-dialog .vss-movable:active {
+    cursor: grabbing;
+}
+
+/*
+    Table Global CSS
+*/
+/* Table border solid color */
+/*
+table {
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+}
+*/
+/* Table header background color */
+
+/* table thead {
+    font-size: 18px !important;
+    color: #FFFFFF !important;
+    background-color:#EEEEEE;
+} */
+
+/* Zebra background color */
+/* table tbody tr:nth-child(even) { background-color: #ECEFF1; } */
+/* table tbody tr:nth-child(even) {
+    background-color: #ECEFF1;
+} */
+
+/*
+td:not(:first-child),
+th:not(:first-child) {
+    border-left: 1px solid #e0e0e0;
+}
+*/
+/* Background color mouse hover */
+
+table tbody tr:hover {
+    background-color: #CFD8DC !important;
+}
+
+body {
+    font-family: 'Roboto', sans-serif !important;
+}
