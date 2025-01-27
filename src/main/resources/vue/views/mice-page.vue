@@ -84,9 +84,6 @@
                   </v-table>
                 </v-card>
               </v-container>
-
-
-
             </v-sheet>
           </v-col>
         </v-row>
@@ -95,7 +92,6 @@
       <template v-slot:footer="{ page, pageCount }">
         <v-footer class="justify-space-between text-body-2 mt-4" color="surface-variant">
           Total mice: {{ mice.length }}
-
           <div>
             Page {{ page }} of {{ pageCount }}
           </div>
@@ -103,6 +99,7 @@
       </template>
     </v-data-iterator>
   </app-frame>
+  <button-mode></button-mode>
 </template>
 
 <script>
