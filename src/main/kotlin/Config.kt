@@ -1,8 +1,7 @@
 package mx.edu.uttt
 
-import org.slf4j.LoggerFactory
-import java.io.FileInputStream
 import java.util.*
+import org.slf4j.LoggerFactory
 
 class ServerConfig(
     val jdbcProtocol: String,
@@ -13,7 +12,8 @@ class ServerConfig(
     val dbPwd: String,
     val dbEncoding: String
 ) {
-    val dbURL get() = "$jdbcProtocol://$dbHost:$dbPort/$dbName?encoding=$dbEncoding"
+    val dbURL
+        get() = "$jdbcProtocol://$dbHost:$dbPort/$dbName?encoding=$dbEncoding"
 }
 
 object Config {
@@ -22,8 +22,14 @@ object Config {
     val SVR_CONF: ServerConfig
 
     init {
-        val prop = Properties().apply { load(FileInputStream("config/server.properties")) }
-        /* */
+        // Cargar el archivo desde el classpath
+        val prop = Properties().apply {
+            val inputStream = Config::class.java.classLoader.getResourceAsStream("config/server.properties")
+                ?: throw IllegalStateException("Archivo config/server.properties no encontrado en el classpath")
+            load(inputStream)
+        }
+
+        // Inicializar la configuración del servidor
         SVR_CONF = ServerConfig(
             jdbcProtocol = prop.getProperty("database.jdbc.protocol"),
             dbHost = prop.getProperty("database.host"),
@@ -33,6 +39,8 @@ object Config {
             dbPwd = prop.getProperty("database.password"),
             dbEncoding = prop.getProperty("database.encoding")
         )
+
+        // Loggear la configuración cargada
         log.info("Database url: {}", SVR_CONF.dbURL)
         log.info("Database user: {}", SVR_CONF.dbUser)
     }

@@ -68,15 +68,15 @@
                         <td>${{ item.raw.price }}</td>
                       </tr>
 
-                      <!-- Fila para los botones -->
+                      <!-- botones -->
                       <div class="mt-4 mb-4">
                         <v-row no-gutters class="justify-center">
                           <v-col cols="auto" class="mx-4">
-                            <v-btn rounded="lg" color="black">Borrar1</v-btn>
+                            <v-btn rounded="lg" color="black">Borrar</v-btn>
                           </v-col>
 
                           <v-col cols="auto" class="mx-4">
-                            <v-btn rounded="lg" color="black">Borrar2</v-btn>
+                            <v-btn rounded="lg" color="black">Modificar</v-btn>
                           </v-col>
                         </v-row>
                       </div>
@@ -99,7 +99,6 @@
       </template>
     </v-data-iterator>
   </app-frame>
-  <button-mode></button-mode>
 </template>
 
 <script>
