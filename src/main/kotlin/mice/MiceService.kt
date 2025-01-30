@@ -20,7 +20,8 @@ data class Mice(
         val buttons: Int = 0,
         val weight: String = "",
         val wireless: Boolean = false,
-        val price: Double = 0.0
+        val price: Double = 0.0,
+        val imageUrl: String = ""
 )
 
 object MiceService {
@@ -34,14 +35,15 @@ object MiceService {
                     buttons = row.int("BUTTONS"),
                     weight = row.string("WEIGHT"),
                     wireless = row.boolean("WIRELESS"),
-                    price = row.double("PRICE")
+                    price = row.double("PRICE"),
+                    imageUrl = row.stringOrNull("IMAGE_URL") ?: "" // 🔹 Agregado
             )
 
     fun selectAll(): List<Mice> {
         val qry =
                 queryOf(
                                 """
-                    SELECT CAST(ID AS VARCHAR(36)) AS ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE
+                    SELECT ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE, IMAGE_URL
                     FROM MICE
                 """.trimIndent()
                         )
@@ -74,19 +76,29 @@ object MiceService {
     }
 
     fun insert(mice: Mice): String {
-        val id = UUID.randomUUID().toString()  // 🔹 Genera UUID en formato String
-    
+        val id = UUID.randomUUID().toString() // Genera UUID en formato String
+
         log.info("UUID generado: $id")
-        log.info("Datos enviados: name=${mice.name}, dpi=${mice.dpi}, buttons=${mice.buttons}, weight=${mice.weight}, wireless=${mice.wireless}, price=${mice.price}")
-    
-        val qry = queryOf(
-            """
-            INSERT INTO MICE (ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """.trimIndent(),
-            id, mice.name, mice.dpi, mice.buttons, mice.weight, mice.wireless, mice.price
+        log.info(
+                "Datos enviados: name=${mice.name}, dpi=${mice.dpi}, buttons=${mice.buttons}, weight=${mice.weight}, wireless=${mice.wireless}, price=${mice.price}, imageUrl=${mice.imageUrl}"
         )
-    
+
+        val qry =
+                queryOf(
+                        """
+            INSERT INTO MICE (ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE, IMAGE_URL)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+                        id,
+                        mice.name,
+                        mice.dpi,
+                        mice.buttons,
+                        mice.weight,
+                        mice.wireless,
+                        mice.price,
+                        mice.imageUrl
+                )
+
         var result = "failed"
         sessionOf(HikariCP.dataSource()).use { conn ->
             try {
@@ -104,7 +116,7 @@ object MiceService {
         }
         return result
     }
-    
+
     fun delete(id: String): String {
         val qry =
                 queryOf(

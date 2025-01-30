@@ -1,20 +1,17 @@
-<template id="mice-page">
+<template id="mice-page" dark>
   <app-frame>
     <v-data-iterator :items="mice" :items-per-page="itemsPerPage">
       <template v-slot:header="{ page, pageCount, prevPage, nextPage }">
         <h1 class="text-h4 font-weight-bold d-flex justify-space-between mb-4 align-center">
-          <div class="text-truncate">
-            Most popular mice
-          </div>
-
+          <div></div>
           <div class="d-flex align-center">
             <!-- Botón para abrir el formulario de inserción -->
-            <v-btn class="me-8" color="primary" @click="showInsertForm = true">
-              <span class="text-none">Add Mouse</span>
+            <v-btn class="me-8" color="black" @click="showInsertForm = true">
+              <span class="text-none">Agregar Mouse</span>
             </v-btn>
 
             <v-btn class="me-8" variant="text" @click="onClickSeeAll">
-              <span class="text-decoration-underline text-none">See all</span>
+              <span class="text-decoration-underline text-none">Ver Todos</span>
             </v-btn>
 
             <div class="d-inline-flex">
@@ -34,12 +31,12 @@
           <v-col v-for="(item, i) in items" :key="i" cols="12" sm="6" xl="3">
             <v-sheet border>
               <v-img :gradient="`to top right, rgba(255, 255, 255, .1), rgba(${item.raw.color}, .15)`"
-                :src="item.raw.src" height="150" cover></v-img>
+                :src="item.raw.imageUrl" height="150" cover v-if="item.raw.imageUrl"></v-img>
 
               <v-container>
                 <v-card class="d-flex flex-column align-center">
-                  <v-list-item :title="item.raw.name" density="comfortable" lines="two"
-                    subtitle="Lorem ipsum dil orei namdie dkaf" class="text-center">
+                  <v-list-item :title="item.raw.name" density="comfortable" lines="two" subtitle="Vista previa"
+                    class="text-center">
                     <template v-slot:title>
                       <strong class="text-h6">
                         {{ item.raw.name }}
@@ -55,12 +52,12 @@
                       </tr>
 
                       <tr align="center" class="my-3">
-                        <th>Buttons:</th>
+                        <th>Botones:</th>
                         <td>{{ item.raw.buttons }}</td>
                       </tr>
 
                       <tr align="center" class="my-3">
-                        <th>Weight:</th>
+                        <th>Peso:</th>
                         <td>{{ item.raw.weight }}</td>
                       </tr>
 
@@ -70,8 +67,8 @@
                       </tr>
 
                       <tr align="center" class="my-3">
-                        <th>Price:</th>
-                        <td>${{ item.raw.price }}</td>
+                        <th>Precio:</th>
+                        <td>${{ item.raw.price }}MX</td>
                       </tr>
 
                       <!-- botones -->
@@ -96,7 +93,7 @@
       </template>
 
       <template v-slot:footer="{ page, pageCount }">
-        <v-footer class="justify-space-between text-body-2 mt-4" color="surface-variant">
+        <v-footer class="justify-space-between text-body-2 mt-4" color="black">
           Total mice: {{ mice.length }}
           <div>
             Page {{ page }} of {{ pageCount }}
@@ -106,39 +103,42 @@
     </v-data-iterator>
 
     <!-- Formulario para insertar datos -->
-    <v-dialog v-model="showInsertForm" max-width="600px">
+    <v-dialog v-model="showInsertForm" max-width="600px" color="black">
       <v-card>
         <v-card-title>
-          <span class="text-h5">Add Mouse</span>
+          <span class="text-h4 text-center">Datos del Mouse</span>
         </v-card-title>
         <v-card-text>
           <v-form @submit.prevent="submitMouse">
             <v-container>
               <v-row>
                 <v-col cols="12">
-                  <v-text-field v-model="newMouse.name" label="Name" required></v-text-field>
+                  <v-text-field v-model="newMouse.name" label="Nombre" required></v-text-field>
                 </v-col>
-                <v-col cols="12">
+                <v-col cols="12" md="6">
                   <v-text-field v-model="newMouse.dpi" label="DPI" type="number" required></v-text-field>
                 </v-col>
-                <v-col cols="12">
-                  <v-text-field v-model="newMouse.buttons" label="Buttons" type="number" required></v-text-field>
+                <v-col cols="12" md="6">
+                  <v-text-field v-model="newMouse.buttons" label="No.Botones" type="number" required></v-text-field>
                 </v-col>
-                <v-col cols="12">
-                  <v-text-field v-model="newMouse.weight" label="Weight" required></v-text-field>
+                <v-col cols="12" md="6">
+                  <v-text-field v-model="newMouse.weight" label="Peso" required></v-text-field>
                 </v-col>
-                <v-col cols="12">
+                <v-col cols="12" md="6">
                   <v-checkbox v-model="newMouse.wireless" label="Wireless"></v-checkbox>
                 </v-col>
-                <v-col cols="12">
-                  <v-text-field v-model="newMouse.price" label="Price" type="number" step="0.01"
+                <v-col cols="12" md="6">
+                  <v-text-field v-model="newMouse.price" label="Precio" type="number" step="0.01"
                     required></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field v-model="newMouse.imageUrl" label="Imagen URL" required></v-text-field>
                 </v-col>
               </v-row>
             </v-container>
             <v-card-actions>
-              <v-btn type="submit" color="primary">Submit</v-btn>
-              <v-btn @click="showInsertForm = false" color="error">Cancel</v-btn>
+              <v-btn type="submit" color="primary">Cargar</v-btn>
+              <v-btn @click="showInsertForm = false" color="error">Cancelar</v-btn>
             </v-card-actions>
           </v-form>
         </v-card-text>
@@ -176,18 +176,16 @@ app.component("mice-page", {
         });
 
         if (!response.ok) {
-          const errorText = await response.text(); // Intentar leer el mensaje de error del backend
+          const errorText = await response.text();
           throw new Error(errorText || "Error al registrar el mouse");
         }
 
-        const newMouseId = await response.text(); // Firebird devuelve el ID insertado como texto
+        const newMouseId = await response.text();
 
         alert(`Mouse registrado exitosamente con ID: ${newMouseId}`);
 
-        // Agregar el nuevo mouse a la lista para que se muestre en la interfaz
         this.mice.push({ ...this.newMouse, id: newMouseId });
 
-        // Resetear el formulario
         this.newMouse = {
           name: "",
           dpi: 0,
@@ -195,9 +193,10 @@ app.component("mice-page", {
           weight: "",
           wireless: false,
           price: 0.0,
+          imageUrl: "",  // 🔹 Reseteamos la URL de la imagen
         };
 
-        this.showInsertForm = false; // Cerrar el formulario
+        this.showInsertForm = false;
       } catch (error) {
         console.error("Error:", error);
         alert(`Ocurrió un error: ${error.message}`);
