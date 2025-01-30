@@ -6,22 +6,29 @@ import io.javalin.http.bodyValidator
 import java.util.UUID
 import java.util.concurrent.CompletableFuture.supplyAsync
 import mx.edu.uttt.Utils.properTrim
+import mx.edu.uttt.log
 
 /*Funciones que accionan los metodos del CRUD*/
 object MiceController : CrudHandler {
 
     override fun create(ctx: Context) {
-        ctx.bodyValidator<Mice>()
+        val mice = ctx.bodyValidator<Mice>()
             .check({ it.name.isNotBlank() }, "El nombre no puede estar vacío")
             .get()
             .apply {
-                id = UUID.randomUUID().toString()  // Generar el ID automáticamente
-                name = name.properTrim()
+                id = UUID.randomUUID().toString() // Genera un UUID válido
+                log.info("🆔 UUID generado: $id") // Imprime el UUID en los logs
             }
-            .also { mice ->
-                ctx.future { supplyAsync { MiceService.insert(mice) }.thenAccept(ctx::result) }
-            }
+    
+        ctx.future { 
+            supplyAsync { MiceService.insert(mice) }
+                .thenAccept { result -> 
+                    log.info("Resultado de la inserción: $result")
+                    ctx.result(result) 
+                }
+        }
     }
+    
     override fun delete(ctx: Context, resourceId: String) {
         ctx.future { supplyAsync { MiceService.delete(resourceId) }.thenAccept(ctx::result) }
     }

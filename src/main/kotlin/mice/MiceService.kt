@@ -2,6 +2,7 @@ package mx.edu.uttt.mice
 
 import io.javalin.http.InternalServerErrorResponse
 import java.sql.SQLException
+import java.util.UUID
 import kotliquery.HikariCP
 import kotliquery.Row
 import kotliquery.queryOf
@@ -13,13 +14,13 @@ import org.slf4j.LoggerFactory
 /*Funciones del CRUD*/
 
 data class Mice(
-        var id: String?,
-        var name: String,
-        val dpi: Int,
-        val buttons: Int,
-        val weight: String,
-        val wireless: Boolean,
-        val price: Double
+        var id: String = "", // 🔹 Asegura que `id` nunca sea null
+        var name: String = "",
+        val dpi: Int = 0,
+        val buttons: Int = 0,
+        val weight: String = "",
+        val wireless: Boolean = false,
+        val price: Double = 0.0
 )
 
 object MiceService {
@@ -73,34 +74,37 @@ object MiceService {
     }
 
     fun insert(mice: Mice): String {
-        val qry =
-                queryOf(
-                        """
-                    INSERT INTO MICE (ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE)
-                    VALUES (CAST(? AS UUID), ?, ?, ?, ?, ?, ?)
-                """.trimIndent(),
-                        mice.id,
-                        mice.name,
-                        mice.dpi,
-                        mice.buttons,
-                        mice.weight,
-                        mice.wireless,
-                        mice.price
-                )
-
+        val id = UUID.randomUUID().toString()  // 🔹 Genera UUID en formato String
+    
+        log.info("UUID generado: $id")
+        log.info("Datos enviados: name=${mice.name}, dpi=${mice.dpi}, buttons=${mice.buttons}, weight=${mice.weight}, wireless=${mice.wireless}, price=${mice.price}")
+    
+        val qry = queryOf(
+            """
+            INSERT INTO MICE (ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            id, mice.name, mice.dpi, mice.buttons, mice.weight, mice.wireless, mice.price
+        )
+    
         var result = "failed"
         sessionOf(HikariCP.dataSource()).use { conn ->
             try {
-                result =
-                        if (conn.run(qry.asUpdate) > 0) mice.id ?: "unknown_id"
-                        else throw InternalServerErrorResponse("No se pudo insertar")
+                val rowsAffected = conn.run(qry.asUpdate)
+                if (rowsAffected > 0) {
+                    result = id
+                    log.info("Mouse insertado con éxito con ID: $result")
+                } else {
+                    log.error("No se insertó el mouse en la base de datos")
+                }
             } catch (ex: SQLException) {
+                log.error("Error en la inserción: ${ex.message}")
                 dbErrorHandler(log, ex.message)
             }
         }
         return result
     }
-
+    
     fun delete(id: String): String {
         val qry =
                 queryOf(

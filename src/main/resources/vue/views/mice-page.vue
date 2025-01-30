@@ -16,7 +16,7 @@
             <v-btn class="me-8" variant="text" @click="onClickSeeAll">
               <span class="text-decoration-underline text-none">See all</span>
             </v-btn>
-            
+
             <div class="d-inline-flex">
               <v-btn :disabled="page === 1" class="me-2" icon="mdi-arrow-left" size="small" variant="tonal"
                 @click="prevPage"></v-btn>
@@ -131,7 +131,8 @@
                   <v-checkbox v-model="newMouse.wireless" label="Wireless"></v-checkbox>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field v-model="newMouse.price" label="Price" type="number" step="0.01" required></v-text-field>
+                  <v-text-field v-model="newMouse.price" label="Price" type="number" step="0.01"
+                    required></v-text-field>
                 </v-col>
               </v-row>
             </v-container>
@@ -167,44 +168,42 @@ app.component("mice-page", {
       this.itemsPerPage = this.itemsPerPage === 4 ? this.mice.length : 4;
     },
     async submitMouse() {
-    try {
-      // Enviar los datos sin el campo ID
-      const newMouse = {
-        name: this.newMouse.name,
-        dpi: this.newMouse.dpi,
-        buttons: this.newMouse.buttons,
-        weight: this.newMouse.weight,
-        wireless: this.newMouse.wireless,
-        price: this.newMouse.price,
-      };
+      try {
+        const response = await fetch("/api/mice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this.newMouse),
+        });
 
-      // Enviar la solicitud POST al backend
-      const response = await fetch("/api/mice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newMouse),
-      });
+        if (!response.ok) {
+          const errorText = await response.text(); // Intentar leer el mensaje de error del backend
+          throw new Error(errorText || "Error al registrar el mouse");
+        }
 
-      if (!response.ok) throw new Error("Error al registrar el mouse");
+        const newMouseId = await response.text(); // Firebird devuelve el ID insertado como texto
 
-      // Obtener el nuevo mouse desde el backend
-      const createdMouse = await response.json();
+        alert(`Mouse registrado exitosamente con ID: ${newMouseId}`);
 
-      // Agregar el nuevo mouse a la lista
-      this.mice.push(createdMouse);
+        // Agregar el nuevo mouse a la lista para que se muestre en la interfaz
+        this.mice.push({ ...this.newMouse, id: newMouseId });
 
-      // Cerrar el formulario y resetear los campos
-      this.showInsertForm = false;
-      this.newMouse = { name: "", dpi: 0, buttons: 0, weight: "", wireless: false, price: 0.0 };
+        // Resetear el formulario
+        this.newMouse = {
+          name: "",
+          dpi: 0,
+          buttons: 0,
+          weight: "",
+          wireless: false,
+          price: 0.0,
+        };
 
-      // Mostrar mensaje de éxito
-      alert("Mouse registrado exitosamente");
-    } catch (error) {
-      console.error(error);
-      alert("Error al registrar el mouse: " + error.message);
-    }
-  },
-  async fetchMice() {
+        this.showInsertForm = false; // Cerrar el formulario
+      } catch (error) {
+        console.error("Error:", error);
+        alert(`Ocurrió un error: ${error.message}`);
+      }
+    },
+    async fetchMice() {
       try {
         // Obtener la lista de ratones desde el backend
         this.loadingOverlay = true;
