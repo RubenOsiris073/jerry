@@ -79,7 +79,7 @@
                           </v-col>
 
                           <v-col cols="auto" class="mx-4">
-                            <v-btn rounded="lg" color="black">Modificar</v-btn>
+                            <v-btn rounded="lg" color="black" @click="editMouse(item.raw)">Modificar</v-btn>
                           </v-col>
                         </v-row>
                       </div>
@@ -151,26 +151,64 @@ app.component("mice-page", {
   template: "#mice-page",
   data: () => ({
     itemsPerPage: 4,
-    mice: [], // Lista de ratones
+    mice: [], // Lista de ratones obtenidos del backend
     newMouse: {
+      id: "",  // 🔹 Se necesita para actualizar correctamente
       name: "",
       dpi: 0,
       buttons: 0,
       weight: "",
       wireless: false,
       price: 0.0,
+      imageUrl: "",  // 🔹 Para guardar la URL de la imagen
     },
-    showInsertForm: false,
-    loadingOverlay: false, // Indicador de carga
+    showInsertForm: false,  // Muestra u oculta el formulario de agregar/editar
+    loadingOverlay: false,  // Indicador de carga mientras se obtiene la lista
+    isEditing: false,       // 🔹 Variable para saber si estamos editando un mouse
   }),
+
   methods: {
+    // 🔹 Alternar entre "ver todos" y paginar por 4 elementos
     onClickSeeAll() {
       this.itemsPerPage = this.itemsPerPage === 4 ? this.mice.length : 4;
     },
+
+    // 🔹 Obtener lista de ratones desde el backend
+    async fetchMice() {
+      try {
+        this.loadingOverlay = true;
+        const response = await fetch("/api/mice");
+
+        if (!response.ok) {
+          throw new Error("Error al obtener los ratones");
+        }
+
+        const data = await response.json();
+        console.log("🐭 Datos recibidos de la API:", data); // 🔹 Depuración
+        this.mice = data;
+      } catch (error) {
+        console.error(error);
+        alert("Error al cargar los ratones: " + error.message);
+      } finally {
+        this.loadingOverlay = false;
+      }
+    },
+
+    // 🔹 Llenar el formulario con los datos de un mouse para editarlo
+    editMouse(mouse) {
+      this.newMouse = { ...mouse }; // Copia los datos del mouse seleccionado
+      this.showInsertForm = true;   // Muestra el formulario
+      this.isEditing = true;        // Indica que estamos editando
+    },
+
+    // 🔹 Crear o actualizar un mouse
     async submitMouse() {
       try {
-        const response = await fetch("/api/mice", {
-          method: "POST",
+        const method = this.isEditing ? "PUT" : "POST";
+        const url = this.isEditing ? `/api/mice/${this.newMouse.id}` : "/api/mice";
+
+        const response = await fetch(url, {
+          method: method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.newMouse),
         });
@@ -180,47 +218,40 @@ app.component("mice-page", {
           throw new Error(errorText || "Error al registrar el mouse");
         }
 
-        const newMouseId = await response.text();
+        alert(this.isEditing ? "Mouse actualizado exitosamente" : "Mouse registrado exitosamente");
 
-        alert(`Mouse registrado exitosamente con ID: ${newMouseId}`);
+        if (this.isEditing) {
+          // 🔹 Actualiza la lista sin recargar la página
+          const index = this.mice.findIndex(m => m.id === this.newMouse.id);
+          if (index !== -1) this.mice[index] = { ...this.newMouse };
+        } else {
+          const newMouseId = await response.text();
+          this.mice.push({ ...this.newMouse, id: newMouseId });
+        }
 
-        this.mice.push({ ...this.newMouse, id: newMouseId });
-
+        // 🔹 Resetear formulario
         this.newMouse = {
+          id: "",
           name: "",
           dpi: 0,
           buttons: 0,
           weight: "",
           wireless: false,
           price: 0.0,
-          imageUrl: "",  // 🔹 Reseteamos la URL de la imagen
+          imageUrl: "",
         };
-
+        this.isEditing = false;
         this.showInsertForm = false;
       } catch (error) {
         console.error("Error:", error);
         alert(`Ocurrió un error: ${error.message}`);
       }
     },
-    async fetchMice() {
-      try {
-        // Obtener la lista de ratones desde el backend
-        this.loadingOverlay = true;
-        const response = await fetch("/api/mice");
-        if (!response.ok) {
-          throw new Error("Error al obtener los ratones");
-        }
-        this.mice = await response.json();
-      } catch (error) {
-        console.error(error);
-        alert("Error al cargar los ratones: " + error.message);
-      } finally {
-        this.loadingOverlay = false;
-      }
-    },
   },
+
+  // 🔹 Cargar la lista de ratones al montar el componente
   mounted() {
-    this.fetchMice(); // Cargar la lista de ratones al montar el componente
+    this.fetchMice();
   },
 });
 </script>

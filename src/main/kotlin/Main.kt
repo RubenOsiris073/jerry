@@ -33,9 +33,11 @@ fun main() {
                 config.router.mount {}.apiBuilder { // Entry Points
                     get("/", VueComponent("mice-page"))
                     path("api") { // Restfull/Endpoints
+                        println("✅ Registrando CRUD en /api/mice")
                         crud("mice/{id}", MiceController)
                     }
                 }
+                
 
                 config.requestLogger.http { ctx, execTimeMs ->
                     if (ctx.req().getAttribute("handled-as-static-file") == null &&
@@ -49,6 +51,14 @@ fun main() {
                 /* Show Custom Banner SHERK */
                 config.showJavalinBanner = false
                 showBanner()
+            }
+            app.events { event ->
+                event.serverStarted {
+                    println("🔹 Rutas registradas en Javalin:")
+                    app.jettyServer().server().handler?.let { handler ->
+                        println(handler)
+                    }
+                }
             }
     app.start()
 }

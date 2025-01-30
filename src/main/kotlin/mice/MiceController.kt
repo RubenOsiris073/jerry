@@ -12,23 +12,23 @@ import mx.edu.uttt.log
 object MiceController : CrudHandler {
 
     override fun create(ctx: Context) {
-        val mice = ctx.bodyValidator<Mice>()
-            .check({ it.name.isNotBlank() }, "El nombre no puede estar vacío")
-            .get()
-            .apply {
-                id = UUID.randomUUID().toString() // Genera un UUID válido
-                log.info("🆔 UUID generado: $id") // Imprime el UUID en los logs
+        val mice =
+                ctx.bodyValidator<Mice>()
+                        .check({ it.name.isNotBlank() }, "El nombre no puede estar vacío")
+                        .get()
+                        .apply {
+                            id = UUID.randomUUID().toString() // Genera un UUID válido
+                            log.info("🆔 UUID generado: $id") // Imprime el UUID en los logs
+                        }
+
+        ctx.future {
+            supplyAsync { MiceService.insert(mice) }.thenAccept { result ->
+                log.info("Resultado de la inserción: $result")
+                ctx.result(result)
             }
-    
-        ctx.future { 
-            supplyAsync { MiceService.insert(mice) }
-                .thenAccept { result -> 
-                    log.info("Resultado de la inserción: $result")
-                    ctx.result(result) 
-                }
         }
     }
-    
+
     override fun delete(ctx: Context, resourceId: String) {
         ctx.future { supplyAsync { MiceService.delete(resourceId) }.thenAccept(ctx::result) }
     }
@@ -43,11 +43,13 @@ object MiceController : CrudHandler {
 
     override fun update(ctx: Context, resourceId: String) {
         ctx.bodyValidator<Mice>()
-                .check({ it.name.isNotBlank() }, "no puede ser nulo")
-                .get()
-                .apply { name = name.properTrim() }
-                .also { mice ->
-                    ctx.future { supplyAsync { MiceService.update(mice) }.thenAccept(ctx::result) }
-                }
+            .check({ it.name.isNotBlank() }, "El nombre no puede estar vacío")
+            .get()
+            .apply { id = resourceId }  // 🔹 Asigna el ID de la URL al objeto `Mice`
+            .also { mice ->
+                ctx.future { supplyAsync { MiceService.update(mice) }.thenAccept(ctx::result) }
+            }
     }
+    
+    
 }

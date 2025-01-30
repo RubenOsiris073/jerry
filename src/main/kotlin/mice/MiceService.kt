@@ -141,28 +141,35 @@ object MiceService {
         val qry =
                 queryOf(
                         """
-                    UPDATE MICE SET 
-                    NAME = ?, 
-                    DPI = ?, 
-                    BUTTONS = ?, 
-                    WEIGHT = ?, 
-                    WIRELESS = ?,
-                    PRICE = ?
-                    WHERE ID = CHAR_TO_UUID(?)""".trimIndent(),
+            UPDATE MICE SET 
+                NAME = ?, 
+                DPI = ?, 
+                BUTTONS = ?, 
+                WEIGHT = ?, 
+                WIRELESS = ?,
+                PRICE = ?,
+                IMAGE_URL = ?
+            WHERE ID = ?
+            """.trimIndent(),
                         mice.name,
                         mice.dpi,
                         mice.buttons,
                         mice.weight,
                         mice.wireless,
-                        mice.id
+                        mice.price,
+                        mice.imageUrl,
+                        mice.id // 🔹 Aquí debe coincidir con el `WHERE ID = ?`
                 )
+
         var result = "failed"
         sessionOf(HikariCP.dataSource()).use { conn ->
             try {
+                val rowsAffected = conn.run(qry.asUpdate)
                 result =
-                        if (conn.run(qry.asUpdate) > 0) "success"
+                        if (rowsAffected > 0) "success"
                         else throw InternalServerErrorResponse("No se pudo actualizar")
             } catch (ex: SQLException) {
+                log.error("Error al actualizar mouse: ${ex.message}")
                 dbErrorHandler(log, ex.message)
             }
         }
