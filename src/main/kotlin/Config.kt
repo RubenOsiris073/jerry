@@ -1,7 +1,9 @@
 package mx.edu.uttt
 
 import java.util.*
+import java.io.FileInputStream
 import org.slf4j.LoggerFactory
+import java.io.File
 
 class ServerConfig(
     val jdbcProtocol: String,
@@ -23,11 +25,8 @@ object Config {
 
     init {
         // Cargar el archivo desde el classpath
-        val prop = Properties().apply {
-            val inputStream = Config::class.java.classLoader.getResourceAsStream("config/server.properties")
-                ?: throw IllegalStateException("Archivo config/server.properties no encontrado en el classpath")
-            load(inputStream)
-        }
+
+        val prop = Properties().apply { load(FileInputStream("config/server.properties")) }
 
         // Inicializar la configuración del servidor
         SVR_CONF = ServerConfig(

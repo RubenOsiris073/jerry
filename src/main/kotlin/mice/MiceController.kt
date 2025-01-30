@@ -8,48 +8,39 @@ import java.util.concurrent.CompletableFuture.supplyAsync
 import mx.edu.uttt.Utils.properTrim
 
 /*Funciones que accionan los metodos del CRUD*/
-object MiceController: CrudHandler {
+object MiceController : CrudHandler {
 
     override fun create(ctx: Context) {
         ctx.bodyValidator<Mice>()
-            .check({ it.name.isNotBlank() }, "no puede ser nulo")
+            .check({ it.name.isNotBlank() }, "El nombre no puede estar vacío")
             .get()
             .apply {
-                id = UUID.randomUUID().toString().uppercase()
+                id = UUID.randomUUID().toString()  // Generar el ID automáticamente
                 name = name.properTrim()
-            }.also { mice ->
+            }
+            .also { mice ->
                 ctx.future { supplyAsync { MiceService.insert(mice) }.thenAccept(ctx::result) }
             }
     }
-
     override fun delete(ctx: Context, resourceId: String) {
-        ctx.future  {
-            supplyAsync { MiceService.delete(resourceId) }.thenAccept(ctx::result)
-        }
+        ctx.future { supplyAsync { MiceService.delete(resourceId) }.thenAccept(ctx::result) }
     }
 
     override fun getAll(ctx: Context) {
-        ctx.future {
-            supplyAsync { MiceService.selectAll() }.thenAccept(ctx::json)
-        }
+        ctx.future { supplyAsync { MiceService.selectAll() }.thenAccept(ctx::json) }
     }
 
     override fun getOne(ctx: Context, resourceId: String) {
-        ctx.future {
-            supplyAsync { MiceService.selectById(resourceId) }.thenAccept(ctx::json)
-        }
+        ctx.future { supplyAsync { MiceService.selectById(resourceId) }.thenAccept(ctx::json) }
     }
 
     override fun update(ctx: Context, resourceId: String) {
         ctx.bodyValidator<Mice>()
-            .check({ it.name.isNotBlank() }, "no puede ser nulo")
-            .get()
-            .apply {
-                name = name.properTrim()
-            }.also { mice ->
-                ctx.future {
-                    supplyAsync { MiceService.update(mice) }.thenAccept(ctx::result)
+                .check({ it.name.isNotBlank() }, "no puede ser nulo")
+                .get()
+                .apply { name = name.properTrim() }
+                .also { mice ->
+                    ctx.future { supplyAsync { MiceService.update(mice) }.thenAccept(ctx::result) }
                 }
-            }
     }
 }

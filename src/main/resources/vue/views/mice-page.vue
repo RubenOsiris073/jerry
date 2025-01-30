@@ -8,10 +8,15 @@
           </div>
 
           <div class="d-flex align-center">
+            <!-- Botón para abrir el formulario de inserción -->
+            <v-btn class="me-8" color="primary" @click="showInsertForm = true">
+              <span class="text-none">Add Mouse</span>
+            </v-btn>
+
             <v-btn class="me-8" variant="text" @click="onClickSeeAll">
               <span class="text-decoration-underline text-none">See all</span>
             </v-btn>
-
+            
             <div class="d-inline-flex">
               <v-btn :disabled="page === 1" class="me-2" icon="mdi-arrow-left" size="small" variant="tonal"
                 @click="prevPage"></v-btn>
@@ -23,6 +28,7 @@
         </h1>
       </template>
 
+      <!-- Resto del código del template (formulario y lista de ratones) -->
       <template v-slot:default="{ items }">
         <v-row>
           <v-col v-for="(item, i) in items" :key="i" cols="12" sm="6" xl="3">
@@ -98,186 +104,125 @@
         </v-footer>
       </template>
     </v-data-iterator>
+
+    <!-- Formulario para insertar datos -->
+    <v-dialog v-model="showInsertForm" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">Add Mouse</span>
+        </v-card-title>
+        <v-card-text>
+          <v-form @submit.prevent="submitMouse">
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field v-model="newMouse.name" label="Name" required></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field v-model="newMouse.dpi" label="DPI" type="number" required></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field v-model="newMouse.buttons" label="Buttons" type="number" required></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field v-model="newMouse.weight" label="Weight" required></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-checkbox v-model="newMouse.wireless" label="Wireless"></v-checkbox>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field v-model="newMouse.price" label="Price" type="number" step="0.01" required></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+            <v-card-actions>
+              <v-btn type="submit" color="primary">Submit</v-btn>
+              <v-btn @click="showInsertForm = false" color="error">Cancel</v-btn>
+            </v-card-actions>
+          </v-form>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </app-frame>
 </template>
-
 <script>
 app.component("mice-page", {
   template: "#mice-page",
   data: () => ({
     itemsPerPage: 4,
-    mice: [
-      {
-        name: 'Logitech G Pro X',
-        color: '14, 151, 210',
-        dpi: 16000,
-        buttons: 8,
-        weight: '63g',
-        wireless: true,
-        price: 149.99,
-        description: 'Logitech G Pro X',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/3.png',
-      },
-      {
-        name: 'Razer DeathAdder V2',
-        color: '12, 146, 47',
-        dpi: 20000,
-        buttons: 8,
-        weight: '82g',
-        wireless: false,
-        price: 69.99,
-        description: 'Razer DeathAdder V2',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/2.png',
-      },
-      {
-        name: 'Corsair Dark Core RGB',
-        color: '107, 187, 226',
-        dpi: 18000,
-        buttons: 9,
-        weight: '133g',
-        wireless: true,
-        price: 89.99,
-        description: 'Corsair Dark Core RGB',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/1.png',
-      },
-      {
-        name: 'SteelSeries Rival 3',
-        color: '228, 196, 69',
-        dpi: 8500,
-        buttons: 6,
-        weight: '77g',
-        wireless: false,
-        price: 29.99,
-        description: 'SteelSeries Rival 3',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/4.png',
-      },
-      {
-        name: 'HyperX Pulsefire FPS Pro',
-        color: '156, 82, 251',
-        dpi: 16000,
-        buttons: 6,
-        weight: '95g',
-        wireless: false,
-        price: 44.99,
-        description: 'HyperX Pulsefire FPS Pro',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/6.png',
-      },
-      {
-        name: 'Zowie EC2',
-        color: '166, 39, 222',
-        dpi: 3200,
-        buttons: 5,
-        weight: '90g',
-        wireless: false,
-        price: 69.99,
-        description: 'Zowie EC2',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/7.png',
-      },
-      {
-        name: 'Roccat Kone AIMO',
-        color: '131, 9, 10',
-        dpi: 16000,
-        buttons: 10,
-        weight: '130g',
-        wireless: false,
-        price: 79.99,
-        description: 'Roccat Kone AIMO',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/8.png',
-      },
-      {
-        name: 'Logitech G903',
-        color: '232, 94, 102',
-        dpi: 12000,
-        buttons: 11,
-        weight: '110g',
-        wireless: true,
-        price: 129.99,
-        description: 'Logitech G903',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/9.png',
-      },
-      {
-        name: 'Cooler Master MM711',
-        color: '58, 192, 239',
-        dpi: 16000,
-        buttons: 6,
-        weight: '60g',
-        wireless: false,
-        price: 49.99,
-        description: 'Cooler Master MM711',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/5.png',
-      },
-      {
-        name: 'Glorious Model O',
-        color: '161, 252, 250',
-        dpi: 12000,
-        buttons: 6,
-        weight: '67g',
-        wireless: false,
-        price: 49.99,
-        description: 'Glorious Model O',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/15.png',
-      },
-      {
-        name: 'HP Omen Photon',
-        color: '201, 1, 2',
-        dpi: 16000,
-        buttons: 11,
-        weight: '128g',
-        wireless: true,
-        price: 99.99,
-        description: 'HP Omen Photon',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/10.png',
-      },
-      {
-        name: 'Asus ROG Chakram',
-        color: '10, 181, 19',
-        dpi: 16000,
-        buttons: 9,
-        weight: '121g',
-        wireless: true,
-        price: 159.99,
-        description: 'Asus ROG Chakram',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/11.png',
-      },
-      {
-        name: 'Razer Naga X',
-        color: '100, 101, 102',
-        dpi: 16000,
-        buttons: 16,
-        weight: '85g',
-        wireless: false,
-        price: 79.99,
-        description: 'Razer Naga X',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/12.png',
-      },
-      {
-        name: 'Mad Catz R.A.T. 8+',
-        color: '136, 241, 242',
-        dpi: 16000,
-        buttons: 11,
-        weight: '145g',
-        wireless: false,
-        price: 99.99,
-        description: 'Mad Catz R.A.T. 8+',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/13.png',
-      },
-      {
-        name: 'Alienware 610M',
-        color: '109, 110, 114',
-        dpi: 16000,
-        buttons: 7,
-        weight: '120g',
-        wireless: true,
-        price: 99.99,
-        description: 'Alienware 610M',
-        src: 'https://cdn.vuetifyjs.com/docs/images/graphics/mice/14.png',
-      },
-    ],
+    mice: [], // Lista de ratones
+    newMouse: {
+      name: "",
+      dpi: 0,
+      buttons: 0,
+      weight: "",
+      wireless: false,
+      price: 0.0,
+    },
+    showInsertForm: false,
+    loadingOverlay: false, // Indicador de carga
   }),
   methods: {
     onClickSeeAll() {
-      this.itemsPerPage = this.itemsPerPage === 4 ? this.mice.length : 4
+      this.itemsPerPage = this.itemsPerPage === 4 ? this.mice.length : 4;
+    },
+    async submitMouse() {
+    try {
+      // Enviar los datos sin el campo ID
+      const newMouse = {
+        name: this.newMouse.name,
+        dpi: this.newMouse.dpi,
+        buttons: this.newMouse.buttons,
+        weight: this.newMouse.weight,
+        wireless: this.newMouse.wireless,
+        price: this.newMouse.price,
+      };
+
+      // Enviar la solicitud POST al backend
+      const response = await fetch("/api/mice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newMouse),
+      });
+
+      if (!response.ok) throw new Error("Error al registrar el mouse");
+
+      // Obtener el nuevo mouse desde el backend
+      const createdMouse = await response.json();
+
+      // Agregar el nuevo mouse a la lista
+      this.mice.push(createdMouse);
+
+      // Cerrar el formulario y resetear los campos
+      this.showInsertForm = false;
+      this.newMouse = { name: "", dpi: 0, buttons: 0, weight: "", wireless: false, price: 0.0 };
+
+      // Mostrar mensaje de éxito
+      alert("Mouse registrado exitosamente");
+    } catch (error) {
+      console.error(error);
+      alert("Error al registrar el mouse: " + error.message);
+    }
+  },
+  async fetchMice() {
+      try {
+        // Obtener la lista de ratones desde el backend
+        this.loadingOverlay = true;
+        const response = await fetch("/api/mice");
+        if (!response.ok) {
+          throw new Error("Error al obtener los ratones");
+        }
+        this.mice = await response.json();
+      } catch (error) {
+        console.error(error);
+        alert("Error al cargar los ratones: " + error.message);
+      } finally {
+        this.loadingOverlay = false;
+      }
     },
   },
-})
+  mounted() {
+    this.fetchMice(); // Cargar la lista de ratones al montar el componente
+  },
+});
 </script>

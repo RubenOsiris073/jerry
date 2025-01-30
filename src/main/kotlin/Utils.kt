@@ -59,12 +59,9 @@ object Utils {
     }
 
     /* Database exception handler */
-    fun dbErrorHandler(log: Logger, msg: String?) {
-        msg?.apply {
-            val err = split(";")
-            log.error(this)
-            throw InternalServerErrorResponse(err[2])
-        }
+    fun dbErrorHandler(log: Logger, errorMessage: String?) {
+        log.error("Error en la base de datos: $errorMessage")
+        throw InternalServerErrorResponse("Error en la base de datos: $errorMessage")
     }
 
     /* Handle Multicatch */
