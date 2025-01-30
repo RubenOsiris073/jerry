@@ -30,14 +30,20 @@ fun main() {
                     vueInstanceNameInJs = "app"
                     rootDirectory("/vue", Location.CLASSPATH)
                 }
-                config.router.mount {}.apiBuilder { // Entry Points
+                config.router.mount {}.apiBuilder {
                     get("/", VueComponent("mice-page"))
-                    path("api") { // Restfull/Endpoints
-                        println("✅ Registrando CRUD en /api/mice")
-                        crud("mice/{id}", MiceController)
+                    path("api/mice") {
+                        println("✅ Registrando endpoints manuales en /api/mice")
+                        get { ctx -> MiceController.getAll(ctx) }
+                        post { ctx -> MiceController.create(ctx) }
+
+                        path("{id}") {
+                            get { ctx -> MiceController.getOne(ctx, ctx.pathParam("id")) }
+                            put { ctx -> MiceController.update(ctx, ctx.pathParam("id")) }
+                            delete { ctx -> MiceController.delete(ctx, ctx.pathParam("id")) }
+                        }
                     }
                 }
-                
 
                 config.requestLogger.http { ctx, execTimeMs ->
                     if (ctx.req().getAttribute("handled-as-static-file") == null &&
@@ -48,17 +54,14 @@ fun main() {
                         )
                     }
                 }
-                /* Show Custom Banner SHERK */
+
                 config.showJavalinBanner = false
                 showBanner()
             }
-            app.events { event ->
-                event.serverStarted {
-                    println("🔹 Rutas registradas en Javalin:")
-                    app.jettyServer().server().handler?.let { handler ->
-                        println(handler)
-                    }
-                }
-            }
+    app.events { event ->
+        event.serverStarted {
+            app.jettyServer().server().handler?.let { handler -> println(handler) }
+        }
+    }
     app.start()
 }

@@ -5,7 +5,6 @@ import io.javalin.http.Context
 import io.javalin.http.bodyValidator
 import java.util.UUID
 import java.util.concurrent.CompletableFuture.supplyAsync
-import mx.edu.uttt.Utils.properTrim
 import mx.edu.uttt.log
 
 /*Funciones que accionan los metodos del CRUD*/
@@ -43,13 +42,11 @@ object MiceController : CrudHandler {
 
     override fun update(ctx: Context, resourceId: String) {
         ctx.bodyValidator<Mice>()
-            .check({ it.name.isNotBlank() }, "El nombre no puede estar vacío")
-            .get()
-            .apply { id = resourceId }  // 🔹 Asigna el ID de la URL al objeto `Mice`
-            .also { mice ->
-                ctx.future { supplyAsync { MiceService.update(mice) }.thenAccept(ctx::result) }
-            }
+                .check({ it.name.isNotBlank() }, "El nombre no puede estar vacío")
+                .get()
+                .apply { id = resourceId }
+                .also { mice ->
+                    ctx.future { supplyAsync { MiceService.update(mice) }.thenAccept(ctx::result) }
+                }
     }
-    
-    
 }

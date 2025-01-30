@@ -59,9 +59,9 @@ object MiceService {
         val qry =
                 queryOf(
                                 """
-                    SELECT CAST(ID AS VARCHAR(36)) AS ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE
-                    FROM MICE
-                    WHERE ID = CAST(? AS UUID)
+                SELECT ID, NAME, DPI, BUTTONS, WEIGHT, WIRELESS, PRICE, IMAGE_URL
+                FROM MICE
+                WHERE ID = ?
                 """.trimIndent(),
                                 id
                         )
@@ -141,16 +141,16 @@ object MiceService {
         val qry =
                 queryOf(
                         """
-            UPDATE MICE SET 
-                NAME = ?, 
-                DPI = ?, 
-                BUTTONS = ?, 
-                WEIGHT = ?, 
-                WIRELESS = ?,
-                PRICE = ?,
-                IMAGE_URL = ?
-            WHERE ID = ?
-            """.trimIndent(),
+                UPDATE MICE SET 
+                    NAME = ?, 
+                    DPI = ?, 
+                    BUTTONS = ?, 
+                    WEIGHT = ?, 
+                    WIRELESS = ?,
+                    PRICE = ?,
+                    IMAGE_URL = ?
+                WHERE ID = ?
+                """.trimIndent(),
                         mice.name,
                         mice.dpi,
                         mice.buttons,
@@ -158,7 +158,7 @@ object MiceService {
                         mice.wireless,
                         mice.price,
                         mice.imageUrl,
-                        mice.id // 🔹 Aquí debe coincidir con el `WHERE ID = ?`
+                        mice.id
                 )
 
         var result = "failed"
@@ -167,7 +167,10 @@ object MiceService {
                 val rowsAffected = conn.run(qry.asUpdate)
                 result =
                         if (rowsAffected > 0) "success"
-                        else throw InternalServerErrorResponse("No se pudo actualizar")
+                        else
+                                throw InternalServerErrorResponse(
+                                        "No se pudo actualizar: ID no encontrado"
+                                )
             } catch (ex: SQLException) {
                 log.error("Error al actualizar mouse: ${ex.message}")
                 dbErrorHandler(log, ex.message)
