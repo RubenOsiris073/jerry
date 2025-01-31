@@ -10,10 +10,6 @@
               <span class="text-none">Agregar Mouse</span>
             </v-btn>
 
-            <v-btn class="me-8" variant="text" @click="onClickSeeAll">
-              <span class="text-decoration-underline text-none">Ver Todos</span>
-            </v-btn>
-
             <div class="d-inline-flex">
               <v-btn :disabled="page === 1" class="me-2" icon="mdi-arrow-left" size="small" variant="tonal"
                 @click="prevPage"></v-btn>
@@ -151,6 +147,7 @@
     </v-dialog>
   </app-frame>
 </template>
+
 <script>
 app.component("mice-page", {
   template: "#mice-page",
@@ -174,7 +171,7 @@ app.component("mice-page", {
   mounted() {
     this.fetchMice();
     window.app = this; // 🔹 Exponer Vue manualmente en la consola
-    console.log("🌍 Vue ahora es accesible en window.app");
+    console.log("🌍 Mice-Page ahora es accesible en window.app");
   },
 
   methods: {
