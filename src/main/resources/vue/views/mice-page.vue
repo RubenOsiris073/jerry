@@ -74,15 +74,20 @@
                       <!-- botones -->
                       <div class="mt-4 mb-4">
                         <v-row no-gutters class="justify-center">
+
                           <v-col cols="auto" class="mx-4">
-                            <v-btn rounded="lg" color="black">Borrar</v-btn>
+                            <v-btn rounded="lg" color="black"
+                              @click="console.log('🗑️ Mouse seleccionado:', item.raw.id); deleteMouse(item.raw.id)">Borrar</v-btn>
                           </v-col>
 
                           <v-col cols="auto" class="mx-4">
-                            <v-btn rounded="lg" color="black" @click="editMouse(item.raw)">Modificar</v-btn>
+                            <v-btn rounded="lg" color="black"
+                              @click="console.log('🗑️ Mouse seleccionado:', item.raw.id); editMouse(item.raw)">Modificar</v-btn>
                           </v-col>
+
                         </v-row>
                       </div>
+
                     </tbody>
                   </v-table>
                 </v-card>
@@ -249,7 +254,35 @@ app.component("mice-page", {
     },
   },
 
-  // 🔹 Cargar la lista de ratones al montar el componente
+  // 🔹 Eliminar un mouse de la lista y del backend
+  async deleteMouse(id) {
+    console.log("🗑️ Intentando eliminar el mouse con ID:", id);
+    if (!id) {
+      console.error("❌ Error: ID no definido");
+      alert("Error: No se encontró el ID del mouse.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/mice/${id}`, { method: "DELETE" });
+
+      console.log("🔄 Respuesta de la API:", response);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Error al eliminar el mouse");
+      }
+
+      alert("Mouse eliminado exitosamente");
+
+      // 🔄 Recargar la lista desde la API
+      await this.fetchMice();
+
+    } catch (error) {
+      console.error("❌ Error al eliminar:", error);
+      alert(`Ocurrió un error al eliminar: ${error.message}`);
+    }
+  },
   mounted() {
     this.fetchMice();
   },

@@ -121,22 +121,28 @@ object MiceService {
         val qry =
                 queryOf(
                         """
-                    DELETE FROM MICE
-                    WHERE ID = CHAR_TO_UUID(?)""".trimIndent(),
+                DELETE FROM MICE WHERE ID = ?
+                """.trimIndent(),
                         id
                 )
+
         var result = "failed"
         sessionOf(HikariCP.dataSource()).use { conn ->
             try {
                 result =
                         if (conn.run(qry.asUpdate) > 0) "success"
-                        else throw InternalServerErrorResponse("No se pudo borrar")
+                        else
+                                throw InternalServerErrorResponse(
+                                        "No se pudo borrar: ID no encontrado"
+                                )
             } catch (ex: SQLException) {
+                log.error("Error al eliminar mouse: ${ex.message}")
                 dbErrorHandler(log, ex.message)
             }
         }
         return result
     }
+
     fun update(mice: Mice): String {
         val qry =
                 queryOf(
