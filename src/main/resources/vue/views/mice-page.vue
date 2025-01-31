@@ -171,6 +171,11 @@ app.component("mice-page", {
     loadingOverlay: false,  // Indicador de carga mientras se obtiene la lista
     isEditing: false,       // 🔹 Variable para saber si estamos editando un mouse
   }),
+  mounted() {
+    this.fetchMice();
+    window.app = this; // 🔹 Exponer Vue manualmente en la consola
+    console.log("🌍 Vue ahora es accesible en window.app");
+  },
 
   methods: {
     // 🔹 Alternar entre "ver todos" y paginar por 4 elementos
@@ -181,21 +186,15 @@ app.component("mice-page", {
     // 🔹 Obtener lista de ratones desde el backend
     async fetchMice() {
       try {
-        this.loadingOverlay = true;
+        console.log("🔄 Fetching mice from API...");
         const response = await fetch("/api/mice");
-
         if (!response.ok) {
           throw new Error("Error al obtener los ratones");
         }
-
-        const data = await response.json();
-        console.log("🐭 Datos recibidos de la API:", data); // 🔹 Depuración
-        this.mice = data;
+        this.mice = await response.json();
+        console.log("🐭 Datos recibidos y almacenados en `mice`:", this.mice);
       } catch (error) {
-        console.error(error);
-        alert("Error al cargar los ratones: " + error.message);
-      } finally {
-        this.loadingOverlay = false;
+        console.error("❌ Error al cargar los ratones:", error);
       }
     },
 
@@ -208,6 +207,7 @@ app.component("mice-page", {
 
     // 🔹 Crear o actualizar un mouse
     async submitMouse() {
+      console.log("✏️ Modificando/creando mouse:", this.newMouse);
       try {
         const method = this.isEditing ? "PUT" : "POST";
         const url = this.isEditing ? `/api/mice/${this.newMouse.id}` : "/api/mice";
@@ -227,9 +227,11 @@ app.component("mice-page", {
 
         if (this.isEditing) {
           // 🔹 Actualiza la lista sin recargar la página
+          console.log("✏️ Modificando mouse:", this.newMouse);
           const index = this.mice.findIndex(m => m.id === this.newMouse.id);
           if (index !== -1) this.mice[index] = { ...this.newMouse };
         } else {
+          console.log("➕ Creando nuevo mouse:", this.newMouse);
           const newMouseId = await response.text();
           this.mice.push({ ...this.newMouse, id: newMouseId });
         }
@@ -252,39 +254,34 @@ app.component("mice-page", {
         alert(`Ocurrió un error: ${error.message}`);
       }
     },
-  },
 
-  // 🔹 Eliminar un mouse de la lista y del backend
-  async deleteMouse(id) {
-    console.log("🗑️ Intentando eliminar el mouse con ID:", id);
-    if (!id) {
-      console.error("❌ Error: ID no definido");
-      alert("Error: No se encontró el ID del mouse.");
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/mice/${id}`, { method: "DELETE" });
-
-      console.log("🔄 Respuesta de la API:", response);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Error al eliminar el mouse");
+    // 🔹 Eliminar un mouse de la lista y del backend
+    async deleteMouse(id) {
+      console.log("🗑️ Intentando eliminar el mouse con ID:", id);
+      if (!id) {
+        console.error("❌ Error: ID no definido");
+        alert("Error: No se encontró el ID del mouse.");
+        return;
       }
 
-      alert("Mouse eliminado exitosamente");
+      try {
+        const response = await fetch(`/api/mice/${id}`, { method: "DELETE" });
 
-      // 🔄 Recargar la lista desde la API
-      await this.fetchMice();
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || "Error al eliminar el mouse");
+        }
 
-    } catch (error) {
-      console.error("❌ Error al eliminar:", error);
-      alert(`Ocurrió un error al eliminar: ${error.message}`);
+        alert("Mouse eliminado exitosamente");
+
+        // 🔄 Remover de la lista localmente sin recargar la API
+        this.mice = this.mice.filter(mouse => mouse.id !== id);
+        console.log("📋 Lista de mice después de eliminar:", this.mice);
+      } catch (error) {
+        console.error("❌ Error al eliminar:", error);
+        alert(`Ocurrió un error al eliminar: ${error.message}`);
+      }
     }
-  },
-  mounted() {
-    this.fetchMice();
-  },
+  }
 });
 </script>
