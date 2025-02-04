@@ -1,10 +1,11 @@
-<template id="mice-page" dark>
+<template id="mice-page">
   <app-frame>
     <v-data-iterator :items="mice" :items-per-page="itemsPerPage">
       <template v-slot:header="{ page, pageCount, prevPage, nextPage }">
         <h1 class="text-h4 font-weight-bold d-flex justify-space-between mb-4 align-center">
           <div></div>
           <div class="d-flex align-center">
+            
             <!-- Botón para abrir el formulario de inserción -->
             <v-btn class="me-8" color="black" @click="showInsertForm = true">
               <span class="text-none">Agregar Mouse</span>
@@ -17,6 +18,7 @@
               <v-btn :disabled="page === pageCount" icon="mdi-arrow-right" size="small" variant="tonal"
                 @click="nextPage"></v-btn>
             </div>
+
           </div>
         </h1>
       </template>
@@ -83,7 +85,6 @@
 
                         </v-row>
                       </div>
-
                     </tbody>
                   </v-table>
                 </v-card>

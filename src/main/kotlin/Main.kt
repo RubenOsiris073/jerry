@@ -9,6 +9,7 @@ import java.util.logging.Logger.getLogger
 import kotliquery.HikariCP
 import mx.edu.uttt.Config.SVR_CONF
 import mx.edu.uttt.Config.showBanner
+import mx.edu.uttt.mice.GameController
 import mx.edu.uttt.mice.MiceController
 
 val log: Logger = getLogger("Main")
@@ -26,12 +27,20 @@ fun main() {
                     enableWebjars()
                     add("public", Location.CLASSPATH)
                 }
+
                 config.vue.apply {
                     vueInstanceNameInJs = "app"
                     rootDirectory("/vue", Location.CLASSPATH)
                 }
+                
                 config.router.mount {}.apiBuilder {
-                    get("/", VueComponent("mice-page"))
+                    get("/mice", VueComponent("mice-page")).also {
+                        println("🔴 Endpoint /mice cargado")
+                    }
+                    get("/game", VueComponent("game-page")).also {
+                        println("🔴 Endpoint /game cargado")
+                    }
+
                     path("api/mice") {
                         println("✅ Registrando endpoints manuales en /api/mice")
                         get { ctx -> MiceController.getAll(ctx) }
@@ -41,6 +50,17 @@ fun main() {
                             get { ctx -> MiceController.getOne(ctx, ctx.pathParam("id")) }
                             put { ctx -> MiceController.update(ctx, ctx.pathParam("id")) }
                             delete { ctx -> MiceController.delete(ctx, ctx.pathParam("id")) }
+                        }
+                    }
+                    path("api/game") {
+                        println("✅ Registrando endpoints manuales en /api/game")
+                        get { ctx -> GameController.getAll(ctx) }
+                        post { ctx -> GameController.create(ctx) }
+
+                        path("{id}") {
+                            get { ctx -> GameController.getOne(ctx, ctx.pathParam("id")) }
+                            put { ctx -> GameController.update(ctx, ctx.pathParam("id")) }
+                            delete { ctx -> GameController.delete(ctx, ctx.pathParam("id")) }
                         }
                     }
                 }
